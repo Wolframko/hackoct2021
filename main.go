@@ -13,7 +13,7 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client){
 												fmt.Println("Connected")
 											}
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error){
-														fmt.Printf("Connection lost error - %v\n", err)
+														fmt.Printf("Connection lost error - %v\n", err.Error())
 													}
 
 	
@@ -27,7 +27,7 @@ func main(){
 	var password = "Autumn2021"
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d",broker,port))
-	opts.SetClientID("go_mqtt_client")
+	opts.SetClientID("data-set")
 	opts.SetUsername(user_name)
 	opts.SetPassword(password)
 	opts.SetDefaultPublishHandler(massagePubHandler)
@@ -35,26 +35,26 @@ func main(){
 	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
 	
-	if token := client.Connect(); token.Wait() && token.Error != nil{
+	if token := client.Connect(); token.Wait() && token.Error() != nil{
 		panic(token.Error())
 	}
 
 	sub(client,topic_prefix)
 	publish(client,topic_prefix)
+	client.Disconnect(100)
 
 }
-func publish(client mqtt.Client, topic_prefix string) {
-    num := 10
+func publish(client mqtt.Client, topic string) {
+    num := 16
     for i := 0; i < num; i++ {
         text := fmt.Sprintf("Message %d", i)
-        token := client.Publish(topic_prefix, 0, false, text)
+        token := client.Publish(topic, 0, false, text)
         token.Wait()
-        time.Sleep(time.Second)
+        time.Sleep(time.Second*3)
     }
 }
 
-func sub(client mqtt.Client, topic_prefix string) {
-    topic := topic_prefix
+func sub(client mqtt.Client, topic string) {
     token := client.Subscribe(topic, 1, nil)
     token.Wait()
   fmt.Printf("Subscribed to topic: %s", topic)
