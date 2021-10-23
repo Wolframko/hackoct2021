@@ -7,7 +7,7 @@ import (
 )
 
 var massagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Сообщение получено: %v , из топика: %s\n", msg.Payload(), msg.Topic())
+	fmt.Printf("Сообщение получено: %s , из топика: %s\n", msg.Payload(), msg.Topic())
 }
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 	fmt.Println("Connected")
@@ -19,11 +19,11 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 func main() {
 	var broker = "mqtt0.bast-dev.ru"
 	var port = 1883
-	var topicPrefix = "service/weather_logger"
+	var topicPrefix = "service/weather_logger/#"
 	var userName = "hackathon"
 	var password = "Autumn2021"
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%d/", broker, port))
 	opts.SetClientID(fmt.Sprintf("data-set%d", time.Now().Unix()))
 	opts.SetUsername(userName)
 	opts.SetPassword(password)
@@ -38,19 +38,16 @@ func main() {
 
 	sub(client, topicPrefix)
 	publish(client, topicPrefix)
-	for true {
-		time.Sleep(time.Second * 2)
-	}
 	client.Disconnect(100)
 
 }
 func publish(client mqtt.Client, topic string) {
 	num := 16
-	for i := 0; i < num; i++ {
-		text := fmt.Sprintf("Message %d", i)
+	for true{
+		text := fmt.Sprintf("Message %d", num)
 		token := client.Publish(topic, 0, false, text)
 		token.Wait()
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 1)
 	}
 }
 
