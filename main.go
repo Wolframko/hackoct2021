@@ -7,7 +7,7 @@ import (
 )
 
 var massagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Сообщение отправлено: %s , из топика: %s\n", msg.Payload(), msg.Topic())
+	fmt.Printf("Сообщение получено: %s , из топика: %s\n", msg.Payload(), msg.Topic())
 }
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 	fmt.Println("Connected")
@@ -17,9 +17,9 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func main() {
-	var broker = "mqtt0.bast-dev.ru"
+	var broker = "broker.emqx.io"
 	var port = 1883
-	var topicPrefix = "service/weather_logger"
+	var topicPrefix = "testtopic/secret34"
 	var userName = "hackathon"
 	var password = "Autumn2021"
 	opts := mqtt.NewClientOptions()
@@ -37,7 +37,10 @@ func main() {
 	}
 
 	sub(client, topicPrefix)
-	//publish(client, topicPrefix)
+	publish(client, topicPrefix)
+	for true {
+		time.Sleep(time.Second * 2)
+	}
 	client.Disconnect(100)
 
 }
@@ -54,5 +57,5 @@ func publish(client mqtt.Client, topic string) {
 func sub(client mqtt.Client, topic string) {
 	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
+	fmt.Printf("Subscribed to topic: %s\n", topic)
 }
